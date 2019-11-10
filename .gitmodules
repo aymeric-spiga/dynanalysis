@@ -1,6 +1,3 @@
-[submodule "planetoplot"]
-	path = planetoplot
-	url = git@github.com:aymeric-spiga/planetoplot.git
 [submodule "planets"]
 	path = planets
 	url = git@github.com:aymeric-spiga/planets.git
