@@ -389,7 +389,8 @@ if not short:
  rho = targetp3d / (myp.R*temp) # density
  emt = rho*vpup # eddy momentum transport
  amt_mmc_v = v*wangmom # meridional angular momentum transport by mean meridional circulation
- amt_mmc_w = o*wangmom # vertical angular momentum transport by mean meridional circulation
+ if is_omega:
+     amt_mmc_w = o*wangmom # vertical angular momentum transport by mean meridional circulation
  mpvpperumass = myp.angmom(u=vpup,lat=lat2d) # contributions from transients waves in the total meridional transport
  mpvp = dm * mpvpperumass /1.e25
  #if not tpot_alternate:
@@ -398,9 +399,11 @@ if not short:
 
  # *** Thermal transport by MMC ***
  temp_mmc_v = temp * v
- temp_mmc_w = temp * o
+ if is_omega:
+     temp_mmc_w = temp * o
  tpot_mmc_v = tpot * v
- tpot_mmc_w = tpot * o
+ if is_omega:
+     tpot_mmc_w = tpot * o
  etape("basic diagnostics",time0)
 
  # *** MASS STREAMFUNCTION ***
@@ -685,17 +688,17 @@ addvar(outfile,nam4,'wangmom',wangmom)
 addvar(outfile,nam4,'superindex',superindex)
 if not short:
   addvar(outfile,nam4,'amt_mmc_v',amt_mmc_v)
-  addvar(outfile,nam4,'amt_mmc_w',amt_mmc_w)
   addvar(outfile,nam4,'temp_mmc_v',temp_mmc_v)
-  addvar(outfile,nam4,'temp_mmc_w',temp_mmc_w)
   addvar(outfile,nam4,'tpot_mmc_v',tpot_mmc_v)
-  addvar(outfile,nam4,'tpot_mmc_w',tpot_mmc_w)
   addvar(outfile,nam4,'mpvp',mpvp)
   addvar(outfile,nam4,'vpup',vpup)
   addvar(outfile,nam4,'vptp',vptp)
   if is_omega:
       addvar(outfile,nam4,'opup',opup)
       addvar(outfile,nam4,'optp',optp)
+      addvar(outfile,nam4,'amt_mmc_w',amt_mmc_w)
+      addvar(outfile,nam4,'temp_mmc_w',temp_mmc_w)
+      addvar(outfile,nam4,'tpot_mmc_w',tpot_mmc_w)
   addvar(outfile,nam4,'eke',eke)
   addvar(outfile,nam4,'tpot',tpot)
   addvar(outfile,nam4,'N2',N2)
