@@ -74,7 +74,7 @@ fileAP = "./diagfi5.nc" ; outfile = "./diagfi5_precast.nc"
 ####################################################
 def etape(charvar,time0):
   ttt = round(time.time()-time0,2)
-  print "TIME=",ttt,"... ... done: "+charvar
+  print("TIME=",ttt,"... ... done: "+charvar)
 
 ####################################################
 def interpolate(targetp1d,sourcep3d,fieldsource3d,spline=False):
@@ -169,20 +169,20 @@ def getp_fromapbp(fileAP):
     bps=pp(file=fileAP,var="bps",x=0,y=0).getf()
     nz = len(aps)
   except:
-    print "info: read apbp.txt"
+    print("info: read apbp.txt")
     ap,bp = np.loadtxt("apbp.txt",unpack=True)
     nz = len(ap)
     aps = 0.5*(ap[0:nz-1]+ap[1:nz])
     bps = 0.5*(bp[0:nz-1]+bp[1:nz])
     nz = len(aps)
-  #print "... ps"
+  #print("... ps")
   ps=pp(file=fileAP,var="ps").getf()
   nt,ny,nx = ps.shape
   p = np.zeros((nt,nz,ny,nx))
   if method == 1:
     ps=ppcompute.mean(ps,axis=2)
     p = np.zeros((nt,nz,ny))
-  #print "... compute p"
+  #print("... compute p")
   for tt in range(nt):
    for kk in range(nz):
     if method == 1:
@@ -203,7 +203,7 @@ def correctnearzero(field):
   removed = -val*negvalue
   w = np.where(np.abs(field) <= removed)
   field[w] = np.nan
-  print "absolute values below this value are set to NaN", removed
+  print("absolute values below this value are set to NaN", removed)
   return field
 
 
@@ -224,7 +224,7 @@ else:
 etape("pressure field",time0)
 
 ####################################################
-print "... getting fields from file !"
+print("... getting fields from file !")
 if method == 1:
  u,xdim,ydim,zdim,tdim=pp(file=fileAP,var="u",x=charx).getfd() ; etape("u",time0)
  temp=pp(file=fileAP,var=vartemp,x=charx).getf() ; etape(vartemp,time0)
@@ -234,8 +234,8 @@ elif method == 2:
 if tpot_alternate:
  tpot = myp.tpot(temp,press,p0=targetp1d[0]+1.) 
 #if 0 == 1:
-#  ISR=pp(file=fileAP,var="ISR",x=charx).getf() ; print "... ... done: ISR"
-#  OLR=pp(file=fileAP,var="OLR",x=charx).getf() ; print "... ... done: OLR"
+#  ISR=pp(file=fileAP,var="ISR",x=charx).getf() ; print("... ... done: ISR")
+#  OLR=pp(file=fileAP,var="OLR",x=charx).getf() ; print("... ... done: OLR")
 if not short:
  if method == 2:
    v=pp(file=fileAP,var="v").getf() ; etape("v",time0)
@@ -245,7 +245,7 @@ if not short:
    v=pp(file=fileAP,var="v",x=charx).getf() ; etape("v",time0)
    if is_omega:
      o=pp(file=fileAP,var="omega",x=charx).getf() ; etape("omega",time0)
-   print "... coupled terms"
+   print("... coupled terms")
    if charx == "999":
      vpup=pp(file=fileAP,var="vpup",x=charx).getf() ; etape("vpup",time0)
      vptp=pp(file=fileAP,var="vptp",x=charx).getf() ; etape("vptp",time0)
@@ -267,7 +267,7 @@ if not short:
      del staru4D ; del starv4D ; del start4D
 
 ####################################################
-print "... interpolating !"
+print("... interpolating !")
 if method == 1:
   u = interpolate(targetp1d,press,u,spline=use_spline) ; etape("u",time0)
   #temp = interpolate(targetp1d,press,temp,spline=use_spline) ; etape(vartemp,time0)
@@ -319,7 +319,7 @@ elif method == 2:
   temp = tm ; del tm
 
 ####################################################
-print "... computations !"
+print("... computations !")
 
 # *** DIMENSIONS
 nt,nz,nlat = u.shape
@@ -451,7 +451,7 @@ if not short:
     #pl.makesave(mode="png",filename="v_actual")
     #pl.f = v[ttt,:,:]-vphi[:,:] ; pl.title = r'v - $d\Psi_M/dp$'
     #pl.makesave(mode="png",filename="v_diff")
-    #print "max diff:",ppcompute.max(v[ttt,:,:]-vphi[:,:]) 
+    #print("max diff:",ppcompute.max(v[ttt,:,:]-vphi[:,:]))
   etape("vertical velocity from streamfunction",time0)
  else:
   omega = o
@@ -750,7 +750,7 @@ if not short:
 
 #####################################################
 #if 0 == 1:
-#print "... adding 2D variables !"
+#print("... adding 2D variables !")
 #namdim2d = (nam4[0],nam4[2],nam4[3])
 #addvar(outfile,namdim2d,'ISR',ISR)
 #addvar(outfile,namdim2d,'OLR',OLR)
