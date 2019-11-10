@@ -67,7 +67,7 @@ class pp():
         if self.y is not None:
             dalist.append( (meridim,int(self.y)) ) 
         if self.z is not None:
-            dalist.append( (altidim,int(self.y)) )
+            dalist.append( (altidim,int(self.z)) )
         if self.t is not None:
             dalist.append( (timedim,int(self.t)) ) 
         ### return field values with (if applicable) data reduction
