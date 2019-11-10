@@ -2,10 +2,8 @@
 
 
 import numpy as np
-#from ppclass import pp
-#import ppcompute
-from fakepp import pp
-import fakeppcompute as ppcompute
+from ppclass import pp
+import ppcompute
 import netCDF4 as nc
 import planets
 import time
