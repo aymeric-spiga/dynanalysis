@@ -97,18 +97,21 @@ class pp():
 
 
 #######################################
-fileAP="diagfi5.nc"
-charx="60"
-charx="0,360"
-time0 = timelib.time()
-u=pp(file=fileAP,var="u",x=charx,compute="pert_x").getf()
-print(u.shape)
-u=pp(file=fileAP,var="u",x=charx).getf()
-print(u.shape)
-u=pp(file=fileAP,var="u").getf()
-u=pp(file=fileAP,var="v").getf()
-print(u.shape)
-u,xdim,ydim,zdim,tdim=pp(file=fileAP,var="u",x=charx).getfd()
-print(timelib.time() - time0)
-#######################################
+#fileAP="diagfi5.nc"
+#charx="60"
+#charx="0,360"
+#time0 = timelib.time()
+#u=pp(file=fileAP,var="u",x=charx,compute="pert_x").getf()
+#print(u.shape)
+#u=pp(file=fileAP,var="u",x=charx).getf()
+#print(u.shape)
+#u=pp(file=fileAP,var="u").getf()
+#u=pp(file=fileAP,var="v").getf()
+#print(u.shape)
+#u,xdim,ydim,zdim,tdim=pp(file=fileAP,var="u",x=charx).getfd()
+#print(timelib.time() - time0)
+########################################
+
+
+
 
