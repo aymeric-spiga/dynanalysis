@@ -1,37 +1,41 @@
 #! /usr/bin/env python
 
+
 import numpy as np
-from ppclass import pp
-import ppcompute
+#from ppclass import pp
+#import ppcompute
+from fakepp import pp
+import fakeppcompute as ppcompute
 import netCDF4 as nc
 import planets
 import time
 
-####################################################
-fileAP="Xhistins_tmp.nc" 
-outfile = "precast.nc"
-####################################################
-vartemp = "temperature"
-ispressure = False
-####################################################
-p_upper,p_lower,nlev = 1.e-1,3.5e5,130 # whole atm
-targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
+
 #####################################################
-#myp = planets.Saturn
-myp = planets.Planet() ; myp.ini("Saturn_dynamico",whereset="./")
-####################################################
-short = False
-includels = True
-####################################################
-charx = "0,360" #999: already zonal mean
-nopole = False
-####################################################
-method = 1 #2
-use_spline = False
-####################################################
-tpot_alternate = True # calculate tpot before interpolation
-is_omega = True
-####################################################
+#fileAP="Xhistins_tmp.nc" 
+#outfile = "precast.nc"
+#####################################################
+#vartemp = "temperature"
+#ispressure = False
+#####################################################
+#p_upper,p_lower,nlev = 1.e-1,3.5e5,130 # whole atm
+#targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
+######################################################
+##myp = planets.Saturn
+#myp = planets.Planet() ; myp.ini("Saturn_dynamico",whereset="./")
+#####################################################
+#short = False
+#includels = True
+#####################################################
+#charx = "0,360" #999: already zonal mean
+#nopole = False
+#####################################################
+#method = 1 #2
+#use_spline = False
+#####################################################
+#tpot_alternate = True # calculate tpot before interpolation
+#is_omega = True
+#####################################################
 
 #fileAP="diagfired.nc"
 #p_upper,p_lower,nlev = 1e-4,1e3,50
@@ -42,6 +46,26 @@ is_omega = True
 #ispressure = False
 #outfile = "diagfired_precast.nc"
 #nopole = True
+
+short = True 
+short = False
+is_omega = False
+includels = True
+method = 1
+use_spline = False
+vartemp = "temp"
+p_upper,p_lower,nlev = 1e-2,1e3,100
+targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
+myp = planets.Mars
+day_per_year = np.ceil(myp.dayperyear())
+charx = "-180,180" # compute zonal mean
+ispressure = False
+nopole = True
+tpot_alternate = True
+
+
+fileAP = "./diagfi5.nc" ; outfile = "./diagfi5_precast.nc"
+
 
 #--------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
