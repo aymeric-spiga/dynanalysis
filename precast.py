@@ -498,12 +498,15 @@ if not short:
  Fp = np.zeros((nt,nz,nlat)) # EP flux V
  Fphi_simp = np.zeros((nt,nz,nlat)) # EP flux H simplified
  Fp_simp = np.zeros((nt,nz,nlat)) # EP flux HV simplified
+ Fp_simp_ep = np.zeros((nt,nz,nlat)) # EP flux HV simplified adapted for equatorial regions
  Tphi = np.zeros((nt,nz,nlat)) # meridional divergence of thermal flux
  Tphi_TEM = np.zeros((nt,nz,nlat)) # meridional divergence of thermal flux
  Tp = np.zeros((nt,nz,nlat)) # vertical divergence of thermal flux
  psi = np.zeros((nt,nz,nlat))
  divFphi = np.zeros((nt,nz,nlat)) # meridional divergence of EP flux
+ divFphi_simp = np.zeros((nt,nz,nlat)) # meridional divergence of EP flux simplified
  divFp = np.zeros((nt,nz,nlat)) # vertical divergence of EP flux (usually small)
+ divFp_simp_eq = np.zeros((nt,nz,nlat)) # vertical divergence of EP flux simplified for equatorial regions (usually small)
  EtoM = np.zeros((nt,nz,nlat)) # conversion from eddy to mean
  vstar = np.zeros((nt,nz,nlat)) # residual mean meridional circulation
  omegastar = np.zeros((nt,nz,nlat)) # residual mean vertical circulation
@@ -522,6 +525,11 @@ if not short:
  tempeddh_TEM = np.zeros((nt,nz,nlat)) # Horizontal thermal flux by eddies in Transformed Eulerian-mean formalism
  tempeddv_TEM = np.zeros((nt,nz,nlat)) # Vertical thermal flux by eddies in Transformed Eulerian-mean formalism
  dTdt_TEM = np.zeros((nt,nz,nlat)) # total thermal evolution in Transformed Eulerian-mean formalism
+
+### Simple formlation of TEM formalism:
+ accedd_TEM_simp = np.zeros((nt,nz,nlat))
+ acceddh_TEM_simp = np.zeros((nt,nz,nlat))
+ acceddv_TEM_simp = np.zeros((nt,nz,nlat))
 
  accrmc_CEM = np.zeros((nt,nz,nlat)) # acceleration by residual mean circulation in Classical Eulerian-mean formalism
  accrmch_CEM = np.zeros((nt,nz,nlat)) # horizontal acceleration by residual mean circulation in Classical Eulerian-mean formalism
@@ -569,9 +577,14 @@ if not short:
    Fp[ttt,:,:] = - acosphi2d * ( verteddy + psi[ttt,:,:] * (du_dy - f) )   
    # EP flux (p) simplified to make an EP flux diagram (see Vallis pp 582 Second Ed.)
    Fp_simp[ttt,:,:] = cosphi2d * psi[ttt,:,:] * f  
+   if is_omega:
+     Fp_simp_eq[ttt,:,:] = cosphi2d * psi[ttt,:,:] * f - opup[ttt,:,:] #for equatorial regions, we keep equatorial waves contribution: opup 
    # (equation 2.3) divergence of EP flux
    dummy,divFphi[ttt,:,:] = np.gradient(Fphi[ttt,:,:]*cosphi2d,targetp1d,latrad,edge_order=2) / acosphi2d  
    divFp[ttt,:,:],dummy = np.gradient(Fp[ttt,:,:],targetp1d,latrad,edge_order=2) 
+   # divergence of EP flux simplified
+   dummy,divFphi_simp[ttt,:,:] = np.gradient(Fphi_simp[ttt,:,:]*cosphi2d,targetp1d,latrad,edge_order=2) / acosphi2d
+   divFp_simp_eq[ttt,:,:],dummy = np.gradient(Fp_simp_eq[ttt,:,:],targetp1d,latrad,edge_order=2)
    # (equation 2.6) residual mean meridional circulation
    dpsi_dp,dummy = np.gradient(psi[ttt,:,:],targetp1d,latrad,edge_order=2)  
    vstar[ttt,:,:] = v[ttt,:,:] - dpsi_dp
@@ -587,6 +600,11 @@ if not short:
    acceddh_TEM[ttt,:,:] = divFphi[ttt,:,:] / acosphi2d
    acceddv_TEM[ttt,:,:] = divFp[ttt,:,:] / acosphi2d
    accedd_TEM[ttt,:,:] = (divFphi[ttt,:,:] + divFp[ttt,:,:]) / acosphi2d
+   # Transformed Eulerian-mean for zonal momentum equation (simple formulation)
+   acceddh_TEM_simp[ttt,:,:] = divFphi_simp[ttt,:,:] / acosphi2d
+   acceddv_TEM_simp[ttt,:,:] = divFp_simp_eq[ttt,:,:] / acosphi2d
+   accedd_TEM_simp[ttt,:,:] = (divFphi_simp[ttt,:,:] + divFp_simp_eq[ttt,:,:]) / acosphi2d
+
    # (equation 2.7) Transformed Eulerian-mean for zonal momentum equation (residual meridional circulation)
    accrmch_TEM[ttt,:,:] = - ((du_dy - f) * vstar[ttt,:,:])
    accrmcv_TEM[ttt,:,:] = - (du_dp*omegastar[ttt,:,:])
@@ -711,6 +729,7 @@ if not short:
   addvar(outfile,nam4,'Fp',Fp)
   addvar(outfile,nam4,'Fphi_simp',Fphi_simp)
   addvar(outfile,nam4,'Fp_simp',Fp_simp)
+  addvar(outfile,nam4,'Fp_simp_eq',Fp_simp_eq)
   addvar(outfile,nam4,'EtoM',EtoM)
   addvar(outfile,nam4,'omegamean',omega)
   addvar(outfile,nam4,'omegastar',omegastar)
@@ -723,6 +742,9 @@ if not short:
   addvar(outfile,nam4,'accedd_TEM',accedd_TEM)
   addvar(outfile,nam4,'acceddh_TEM',acceddh_TEM)
   addvar(outfile,nam4,'acceddv_TEM',acceddv_TEM)
+  addvar(outfile,nam4,'accedd_TEM_simp',accedd_TEM_simp)
+  addvar(outfile,nam4,'acceddh_TEM_simp',acceddh_TEM_simp)
+  addvar(outfile,nam4,'acceddv_TEM_simp',acceddv_TEM_simp)
   addvar(outfile,nam4,'tempedd_TEM',tempedd_TEM)
   addvar(outfile,nam4,'tempeddh_TEM',tempeddh_TEM)
   addvar(outfile,nam4,'tempeddv_TEM',tempeddv_TEM)
