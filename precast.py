@@ -10,60 +10,30 @@ import time
 
 
 #####################################################
-#fileAP="Xhistins_tmp.nc" 
-#outfile = "precast.nc"
+fileAP="Xhistins_tmp.nc" 
+outfile = "precast.nc"
 #####################################################
-#vartemp = "temperature"
-#ispressure = False
+vartemp = "temperature"
+ispressure = False
 #####################################################
-#p_upper,p_lower,nlev = 1.e-1,3.5e5,130 # whole atm
-#targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
+p_upper,p_lower,nlev = 1.e-1,3.5e5,130 # whole atm
+targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
 ######################################################
 ##myp = planets.Saturn
-#myp = planets.Planet() ; myp.ini("Saturn_dynamico",whereset="./")
+myp = planets.Planet() ; myp.ini("Saturn_dynamico",whereset="./")
 #####################################################
-#short = False
-#includels = True
-#####################################################
-#charx = "0,360" #999: already zonal mean
-#nopole = False
-#####################################################
-#method = 1 #2
-#use_spline = False
-#####################################################
-#tpot_alternate = True # calculate tpot before interpolation
-#is_omega = True
-#####################################################
-
-#fileAP="diagfired.nc"
-#p_upper,p_lower,nlev = 1e-4,1e3,50
-#targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
-#myp = planets.Mars
-#day_per_year = np.ceil(myp.dayperyear())
-#charx = "-180,180" # compute zonal mean
-#ispressure = False
-#outfile = "diagfired_precast.nc"
-#nopole = True
-
-short = True 
 short = False
-is_omega = False
 includels = True
-method = 1
+#####################################################
+charx = "0,360" #999: already zonal mean
+nopole = False
+#####################################################
+method = 1 #2
 use_spline = False
-vartemp = "temp"
-p_upper,p_lower,nlev = 1e-2,1e3,100
-targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
-myp = planets.Mars
-day_per_year = np.ceil(myp.dayperyear())
-charx = "-180,180" # compute zonal mean
-ispressure = False
-nopole = True
-tpot_alternate = True
-
-
-fileAP = "./diagfi5.nc" ; outfile = "./diagfi5_precast.nc"
-
+#####################################################
+tpot_alternate = True # calculate tpot before interpolation
+is_omega = True
+#####################################################
 
 #--------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
@@ -497,8 +467,8 @@ if not short:
  Fphi = np.zeros((nt,nz,nlat)) # EP flux H
  Fp = np.zeros((nt,nz,nlat)) # EP flux V
  Fphi_simp = np.zeros((nt,nz,nlat)) # EP flux H simplified
- Fp_simp = np.zeros((nt,nz,nlat)) # EP flux HV simplified
- Fp_simp_ep = np.zeros((nt,nz,nlat)) # EP flux HV simplified adapted for equatorial regions
+ Fp_simp = np.zeros((nt,nz,nlat)) # EP flux V simplified
+ Fp_simp_eq = np.zeros((nt,nz,nlat)) # EP flux V simplified adapted for equatorial regions
  Tphi = np.zeros((nt,nz,nlat)) # meridional divergence of thermal flux
  Tphi_TEM = np.zeros((nt,nz,nlat)) # meridional divergence of thermal flux
  Tp = np.zeros((nt,nz,nlat)) # vertical divergence of thermal flux
@@ -568,7 +538,7 @@ if not short:
    # (equation 2.1) EP flux (phi)
    Fphi[ttt,:,:] = acosphi2d * ( - vpup[ttt,:,:] + psi[ttt,:,:]*du_dp ) 
    # EP flux (phi) simplified to make an EP flux diagram (see Vallis pp 582 Second Ed.)
-   Fphi_simp[ttt,:,:] = - cosphi2d * vpup[ttt,:,:] 
+   Fphi_simp[ttt,:,:] = - acosphi2d * vpup[ttt,:,:] 
    # (equation 2.1) EP flux (p)
    if is_omega:
      verteddy = - opup[ttt,:,:]
@@ -576,9 +546,9 @@ if not short:
      verteddy = 0. # often a acceptable approximation
    Fp[ttt,:,:] = - acosphi2d * ( verteddy + psi[ttt,:,:] * (du_dy - f) )   
    # EP flux (p) simplified to make an EP flux diagram (see Vallis pp 582 Second Ed.)
-   Fp_simp[ttt,:,:] = cosphi2d * psi[ttt,:,:] * f  
+   Fp_simp[ttt,:,:] = acosphi2d * psi[ttt,:,:] * f  
    if is_omega:
-     Fp_simp_eq[ttt,:,:] = cosphi2d * psi[ttt,:,:] * f - opup[ttt,:,:] #for equatorial regions, we keep equatorial waves contribution: opup 
+     Fp_simp_eq[ttt,:,:] = - acosphi2d * opup[ttt,:,:] #for equatorial regions, we keep equatorial waves contribution: opup 
    # (equation 2.3) divergence of EP flux
    dummy,divFphi[ttt,:,:] = np.gradient(Fphi[ttt,:,:]*cosphi2d,targetp1d,latrad,edge_order=2) / acosphi2d  
    divFp[ttt,:,:],dummy = np.gradient(Fp[ttt,:,:],targetp1d,latrad,edge_order=2) 
