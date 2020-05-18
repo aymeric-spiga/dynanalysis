@@ -35,6 +35,31 @@ tpot_alternate = True # calculate tpot before interpolation
 is_omega = True
 #####################################################
 
+short = True
+short = False
+is_omega = False
+includels = True
+method = 1
+use_spline = False
+vartemp = "temp"
+p_upper,p_lower,nlev = 1e-2,1e3,100
+targetp1d = np.logspace(np.log10(p_lower),np.log10(p_upper),nlev)
+myp = planets.Mars
+day_per_year = np.ceil(myp.dayperyear())
+charx = "-180,180" # compute zonal mean
+ispressure = False
+nopole = True
+tpot_alternate = True
+
+localt="24"
+fileAP = "diagfi210_240_LT"+localt+".nc" ; outfile = "diagfi210_240_LT"+localt+"_precast.nc"
+#fileAP = "diagfi210_240_LT3.nc" ; outfile = "diagfi210_240_LT3_precast.nc"
+fileAP = "diagfi8.nc" ; outfile = "diagfi8_precast.nc"
+fileAP = "diagfi7.nc" ; outfile = "diagfi7_precast.nc"
+fileAP = "diagfi6.nc" ; outfile = "diagfi6_precast.nc"
+#fileAP = "diagfi210_240.nc" ; outfile = "diagfi210_240_precast.nc"
+
+
 #--------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
