@@ -33,6 +33,7 @@ use_spline = False
 #####################################################
 tpot_alternate = True # calculate tpot before interpolation
 is_omega = True
+is_gwdparam = False
 #####################################################
 
 #--------------------------------------------------------------------------------------------------------------------------
@@ -213,6 +214,9 @@ if not short:
    v=pp(file=fileAP,var="v",x=charx).getf() ; etape("v",time0)
    if is_omega:
      o=pp(file=fileAP,var="omega",x=charx).getf() ; etape("omega",time0)
+   if is_gwdparam:
+     east_gwstress=pp(file=fileAP,var="east_gwstress",x=charx).getf() ; etape("east_gwstress",time0)
+     west_gwstress=pp(file=fileAP,var="west_gwstress",x=charx).getf() ; etape("west_gwstress",time0)
    print("... coupled terms")
    if charx == "999":
      vpup=pp(file=fileAP,var="vpup",x=charx).getf() ; etape("vpup",time0)
@@ -251,6 +255,9 @@ if method == 1:
       o = interpolate(targetp1d,press,o,spline=use_spline) ; etape("omega",time0)
       opup = interpolate(targetp1d,press,opup,spline=use_spline) ; etape("opup",time0)
       optp = interpolate(targetp1d,press,optp,spline=use_spline) ; etape("optp",time0)
+    if is_gwdparam:
+      east_gwstress=interpolate(targetp1d,press,east_gwstress,spline=use_spline) ; etape("east_gwstress",time0)
+      west_gwstress=interpolate(targetp1d,press,west_gwstress,spline=use_spline) ; etape("west_gwstress",time0)
     eke = interpolate(targetp1d,press,0.5*(vpvp + upup),spline=use_spline) ; etape("eke",time0)
 elif method == 2:
   u = interpolate4(targetp1d,press,u,spline=use_spline)
@@ -685,6 +692,9 @@ if not short:
       addvar(outfile,nam4,'amt_mmc_w',amt_mmc_w)
       addvar(outfile,nam4,'temp_mmc_w',temp_mmc_w)
       addvar(outfile,nam4,'tpot_mmc_w',tpot_mmc_w)
+  if is_gwdparam:
+      addvar(outfile,nam4,'east_gwstress',east_gwstress)
+      addvar(outfile,nam4,'west_gwstress',west_gwstress)
   addvar(outfile,nam4,'eke',eke)
   addvar(outfile,nam4,'tpot',tpot)
   addvar(outfile,nam4,'N2',N2)
