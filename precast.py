@@ -365,8 +365,6 @@ if not short:
  rho = targetp3d / (myp.R*temp) # density
  emt = rho*vpup # eddy momentum transport
  amt_mmc_v = v*wangmom # meridional angular momentum transport by mean meridional circulation
- if is_omega:
-     amt_mmc_w = o*wangmom # vertical angular momentum transport by mean meridional circulation
  mpvpperumass = myp.angmom(u=vpup,lat=lat2d) # contributions from transients waves in the total meridional transport
  mpvp = dm * mpvpperumass /1.e25
  #if not tpot_alternate:
@@ -375,12 +373,9 @@ if not short:
 
  # *** Thermal transport by MMC ***
  temp_mmc_v = temp * v
- if is_omega:
-     temp_mmc_w = temp * o
  tpot_mmc_v = tpot * v
- if is_omega:
-     tpot_mmc_w = tpot * o
  etape("basic diagnostics",time0)
+ etape("please wait for extended computations...",time0)
 
  # *** MASS STREAMFUNCTION ***
  # *** AND VERTICAL VELOCITY ***
@@ -431,6 +426,11 @@ if not short:
   etape("vertical velocity from streamfunction",time0)
  else:
   omega = o
+
+ # *** DIAGNOSTICS USING VERTICAL VELOCITY (now available from either streamfunction or file)
+ amt_mmc_w = omega*wangmom # vertical angular momentum transport by mean meridional circulation
+ temp_mmc_w = temp * omega
+ tpot_mmc_w = tpot * omega
 
  # *** DIAGNOSTICS FOR INSTABILITY
  N2 = np.zeros((nt,nz,nlat)) # static stability
@@ -689,12 +689,12 @@ if not short:
   addvar(outfile,nam4,'mpvp',mpvp)
   addvar(outfile,nam4,'vpup',vpup)
   addvar(outfile,nam4,'vptp',vptp)
+  addvar(outfile,nam4,'amt_mmc_w',amt_mmc_w)
+  addvar(outfile,nam4,'temp_mmc_w',temp_mmc_w)
+  addvar(outfile,nam4,'tpot_mmc_w',tpot_mmc_w)
   if is_omega:
       addvar(outfile,nam4,'opup',opup)
       addvar(outfile,nam4,'optp',optp)
-      addvar(outfile,nam4,'amt_mmc_w',amt_mmc_w)
-      addvar(outfile,nam4,'temp_mmc_w',temp_mmc_w)
-      addvar(outfile,nam4,'tpot_mmc_w',tpot_mmc_w)
   if is_gwdparam:
       addvar(outfile,nam4,'east_gwstress',east_gwstress)
       addvar(outfile,nam4,'west_gwstress',west_gwstress)
