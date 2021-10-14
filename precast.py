@@ -11,9 +11,11 @@ import time
 
 #####################################################
 fileAP="Xhistins_tmp.nc" 
+#fileAP="diagfi_tmp.nc" 
 outfile = "precast.nc"
 #####################################################
 vartemp = "temperature"
+#vartemp = "temp"
 ispressure = False
 #####################################################
 p_upper,p_lower,nlev = 1.e-1,3.5e5,130 # whole atm
@@ -33,6 +35,7 @@ use_spline = False
 #####################################################
 tpot_alternate = True # calculate tpot before interpolation
 is_omega = True
+is_gwdparam = False
 #####################################################
 
 #--------------------------------------------------------------------------------------------------------------------------
@@ -213,6 +216,9 @@ if not short:
    v=pp(file=fileAP,var="v",x=charx).getf() ; etape("v",time0)
    if is_omega:
      o=pp(file=fileAP,var="omega",x=charx).getf() ; etape("omega",time0)
+   if is_gwdparam:
+     east_gwstress=pp(file=fileAP,var="east_gwstress",x=charx).getf() ; etape("east_gwstress",time0)
+     west_gwstress=pp(file=fileAP,var="west_gwstress",x=charx).getf() ; etape("west_gwstress",time0)
    print("... coupled terms")
    if charx == "999":
      vpup=pp(file=fileAP,var="vpup",x=charx).getf() ; etape("vpup",time0)
@@ -251,6 +257,9 @@ if method == 1:
       o = interpolate(targetp1d,press,o,spline=use_spline) ; etape("omega",time0)
       opup = interpolate(targetp1d,press,opup,spline=use_spline) ; etape("opup",time0)
       optp = interpolate(targetp1d,press,optp,spline=use_spline) ; etape("optp",time0)
+    if is_gwdparam:
+      east_gwstress=interpolate(targetp1d,press,east_gwstress,spline=use_spline) ; etape("east_gwstress",time0)
+      west_gwstress=interpolate(targetp1d,press,west_gwstress,spline=use_spline) ; etape("west_gwstress",time0)
     eke = interpolate(targetp1d,press,0.5*(vpvp + upup),spline=use_spline) ; etape("eke",time0)
 elif method == 2:
   u = interpolate4(targetp1d,press,u,spline=use_spline)
@@ -482,9 +491,11 @@ if not short:
  omegastar = np.zeros((nt,nz,nlat)) # residual mean vertical circulation
 
  accrmc_TEM = np.zeros((nt,nz,nlat)) # total acceleration by residual mean circulation in Transformed Eulerian-mean formalism
+ mass_accrmc_TEM = np.zeros((nt,nz,nlat)) # total acceleration by residual mean circulation in Transformed Eulerian-mean formalism
  accrmch_TEM = np.zeros((nt,nz,nlat)) # horizontal acceleration by residual mean circulation in Transformed Eulerian-mean formalism
  accrmcv_TEM = np.zeros((nt,nz,nlat)) # vertical acceleration by residual mean circulation in Transformed Eulerian-mean formalism
  accedd_TEM = np.zeros((nt,nz,nlat)) # total eddies acceleration in Transformed Eulerian-mean formalism
+ mass_accedd_TEM = np.zeros((nt,nz,nlat)) # total acceleration by residual mean circulation in Transformed Eulerian-mean formalism
  acceddh_TEM = np.zeros((nt,nz,nlat)) # horizontal eddies acceleration in Transformed Eulerian-mean formalism
  acceddv_TEM = np.zeros((nt,nz,nlat)) # vertical eddies acceleration in Transformed Eulerian-mean formalism
  dudt_TEM = np.zeros((nt,nz,nlat)) # Total acceleration in Transformed Eulerian-mean formalism
@@ -495,6 +506,8 @@ if not short:
  tempeddh_TEM = np.zeros((nt,nz,nlat)) # Horizontal thermal flux by eddies in Transformed Eulerian-mean formalism
  tempeddv_TEM = np.zeros((nt,nz,nlat)) # Vertical thermal flux by eddies in Transformed Eulerian-mean formalism
  dTdt_TEM = np.zeros((nt,nz,nlat)) # total thermal evolution in Transformed Eulerian-mean formalism
+ psim_TEM = np.zeros((nt,nz,nlat)) # transformed Eulerian mean streamfunction (seviour et al 2012)
+ wave_drag = np.zeros((nt,nz,nlat)) # zonal-mean forces due to waves drag using psi_TEM (seviour et al 2012)
 
 ### Simple formlation of TEM formalism:
  accedd_TEM_simp = np.zeros((nt,nz,nlat))
@@ -559,13 +572,13 @@ if not short:
    dpsi_dp,dummy = np.gradient(psi[ttt,:,:],targetp1d,latrad,edge_order=2)  
    vstar[ttt,:,:] = v[ttt,:,:] - dpsi_dp
    dummy,dpsi_dy = np.gradient(psi[ttt,:,:]*cosphi2d,targetp1d,latrad,edge_order=2) / acosphi2d
-   omegastar[ttt,:,:] = omega[ttt,:,:] + dpsi_dy
+   if is_omega:
+       omegastar[ttt,:,:] = omega[ttt,:,:] + dpsi_dy
    # (F. Lott lessons) divergence of turbulent thermal flux
    dummy,Tphi[ttt,:,:] = np.gradient(vptp[ttt,:,:]*cosphi2d,targetp1d,latrad,edge_order=2) / acosphi2d
    Tphi_TEM[ttt,:,:],dummy = np.gradient(vptp[ttt,:,:]*dt_dy/(myp.a*stabterm),targetp1d,latrad,edge_order=2)
    if is_omega:
        Tp[ttt,:,:],dummy = np.gradient(optp[ttt,:,:],targetp1d,latrad,edge_order=2)
-
    # (equation 2.7) Transformed Eulerian-mean for zonal momentum equation (eddies)
    acceddh_TEM[ttt,:,:] = divFphi[ttt,:,:] / acosphi2d
    acceddv_TEM[ttt,:,:] = divFp[ttt,:,:] / acosphi2d
@@ -580,6 +593,11 @@ if not short:
    accrmcv_TEM[ttt,:,:] = - (du_dp*omegastar[ttt,:,:])
    accrmc_TEM[ttt,:,:] = - ((du_dy - f) * vstar[ttt,:,:]) - (du_dp*omegastar[ttt,:,:])
    dudt_TEM[ttt,:,:] = accrmc_TEM[ttt,:,:] + accedd_TEM[ttt,:,:]
+
+   #TEM * layer mass to highlight lower level
+   mass_accedd_TEM[ttt,:,:] = accedd_TEM[ttt,:,:] * dm[ttt,:,:] / 1.e25
+   mass_accrmc_TEM[ttt,:,:] = accrmc_TEM[ttt,:,:] * dm[ttt,:,:] / 1.e25
+
    # (F. Lott lessons, chap 3) Transformed Eulerian-mean for thermodynamics equation (residual mean circulation)
    temprmch_TEM[ttt,:,:] = - ((dt_dy / myp.a)*vstar[ttt,:,:])
    temprmcv_TEM[ttt,:,:] = - (dt_dp*omegastar[ttt,:,:])
@@ -613,6 +631,30 @@ if not short:
    tempeddh_CEM[ttt,:,:] = - Tphi[ttt,:,:]
    tempeddv_CEM[ttt,:,:] = - Tp[ttt,:,:]
    dTdt_CEM[ttt,:,:] = temprmc_CEM[ttt,:,:] + tempedd_CEM[ttt,:,:]
+
+   # (Seviour et al. 2012) zonal-mean forces due to waves drag, related to psi_TEM
+   dummy,mmm = np.gradient(angmom[ttt,:,:],targetp1d,latrad,edge_order=2)
+   wave_drag[ttt,:,:] = vstar[ttt,:,:]* mmm / (myp.a * acosphi2d)
+
+ # (Seviour et al. 2012) transformed eulerian mean streamfunction
+ w = np.isnan(vstar) # save NaN locations 
+ vstar[w] = 0. # necessary otherwise integrations fail
+ # integration loop
+ x = targetp1d[:] # coordinate
+ #x = np.insert(x,0,0) # JL: integrate from p=0 towards p
+ x = np.append(x,0) # JL: integrate from p=0 towards p
+ for ttt in range(nt):
+  for yyy in range(nlat):
+   y = vstar[ttt,:,yyy] # integrand
+   #y = np.insert(y,0,y[0]) # JL: integrate from p=0 towards p
+   y = np.append(y,y[-1]) # JL: integrate from p=0 towards p
+   for zzz in range(0,nz):
+#     the minus sign below comes from the fact that x is ordered by decreasing values of p
+#           whereas the integral should be performed from 0 to p. 
+     psim_TEM[ttt,zzz,yyy] = -scipy.integrate.simps(y[zzz:],x[zzz:])*cosphi2d[0,yyy]
+     #psim[ttt,zzz,yyy] = scipy.integrate.simps(y[0:zzz+1],x[0:zzz+1])*alph[0,yyy]
+ # reset to NaN after integration
+ vstar[w] = np.nan ; psim_TEM[w] = np.nan
 
 
  etape("EP flux",time0)
@@ -685,6 +727,9 @@ if not short:
       addvar(outfile,nam4,'amt_mmc_w',amt_mmc_w)
       addvar(outfile,nam4,'temp_mmc_w',temp_mmc_w)
       addvar(outfile,nam4,'tpot_mmc_w',tpot_mmc_w)
+  if is_gwdparam:
+      addvar(outfile,nam4,'east_gwstress',east_gwstress)
+      addvar(outfile,nam4,'west_gwstress',west_gwstress)
   addvar(outfile,nam4,'eke',eke)
   addvar(outfile,nam4,'tpot',tpot)
   addvar(outfile,nam4,'N2',N2)
@@ -707,20 +752,26 @@ if not short:
   addvar(outfile,nam4,'psim',psim)
   # outputs for transformed Eulerian-mean formalism
   addvar(outfile,nam4,'accrmc_TEM',accrmc_TEM)
+  addvar(outfile,nam4,'mass_accrmc_TEM',mass_accrmc_TEM)
   addvar(outfile,nam4,'accrmch_TEM',accrmch_TEM)
   addvar(outfile,nam4,'accrmcv_TEM',accrmcv_TEM)
   addvar(outfile,nam4,'accedd_TEM',accedd_TEM)
+  addvar(outfile,nam4,'mass_accedd_TEM',mass_accedd_TEM)
   addvar(outfile,nam4,'acceddh_TEM',acceddh_TEM)
   addvar(outfile,nam4,'acceddv_TEM',acceddv_TEM)
   addvar(outfile,nam4,'accedd_TEM_simp',accedd_TEM_simp)
   addvar(outfile,nam4,'acceddh_TEM_simp',acceddh_TEM_simp)
   addvar(outfile,nam4,'acceddv_TEM_simp',acceddv_TEM_simp)
+  addvar(outfile,nam4,'dudt_TEM',dudt_TEM)
   addvar(outfile,nam4,'tempedd_TEM',tempedd_TEM)
   addvar(outfile,nam4,'tempeddh_TEM',tempeddh_TEM)
   addvar(outfile,nam4,'tempeddv_TEM',tempeddv_TEM)
   addvar(outfile,nam4,'temprmc_TEM',temprmc_TEM)
   addvar(outfile,nam4,'temprmch_TEM',temprmch_TEM)
   addvar(outfile,nam4,'temprmcv_TEM',temprmcv_TEM)
+  addvar(outfile,nam4,'dTdt_TEM',dTdt_TEM)
+  addvar(outfile,nam4,'psim_TEM',psim_TEM)
+  addvar(outfile,nam4,'wave_drag',wave_drag)
   # outputs for classical Eulerian-mean formalism
   addvar(outfile,nam4,'accrmc_CEM',accrmc_CEM)
   addvar(outfile,nam4,'accrmch_CEM',accrmch_CEM)
