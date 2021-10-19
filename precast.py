@@ -793,7 +793,7 @@ if not short:
       addvar(outfile,nam4,'tempeddv_CEM',tempeddv_CEM)
       addvar(outfile,nam4,'dTdt_CEM',dTdt_CEM)
     
->>>>>>> d2ada2d29da6ad7dd168ed7a90d3e389b6004695
+
 
 #####################################################
 #if 0 == 1:
