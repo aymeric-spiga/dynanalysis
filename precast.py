@@ -638,25 +638,25 @@ if not short:
        dummy,mmm = np.gradient(angmom[ttt,:,:],targetp1d,latrad,edge_order=2)
        wave_drag[ttt,:,:] = vstar[ttt,:,:]* mmm / (myp.a * acosphi2d)
      
-    # (Seviour et al. 2012) transformed eulerian mean streamfunction
-    w = np.isnan(vstar) # save NaN locations 
-    vstar[w] = 0. # necessary otherwise integrations fail
-    # integration loop
-    x = targetp1d[:] # coordinate
-    #x = np.insert(x,0,0) # JL: integrate from p=0 towards p
-    x = np.append(x,0) # JL: integrate from p=0 towards p
-    for ttt in range(nt):
-      for yyy in range(nlat):
-         y = vstar[ttt,:,yyy] # integrand
-         #y = np.insert(y,0,y[0]) # JL: integrate from p=0 towards p
-         y = np.append(y,y[-1]) # JL: integrate from p=0 towards p
-      for zzz in range(0,nz):
-#           the minus sign below comes from the fact that x is ordered by decreasing values of p
-#           whereas the integral should be performed from 0 to p. 
-         psim_TEM[ttt,zzz,yyy] = -scipy.integrate.simps(y[zzz:],x[zzz:])*cosphi2d[0,yyy]
+     # (Seviour et al. 2012) transformed eulerian mean streamfunction
+     w = np.isnan(vstar) # save NaN locations 
+     vstar[w] = 0. # necessary otherwise integrations fail
+     # integration loop
+     x = targetp1d[:] # coordinate
+     #x = np.insert(x,0,0) # JL: integrate from p=0 towards p
+     x = np.append(x,0) # JL: integrate from p=0 towards p
+     for ttt in range(nt):
+       for yyy in range(nlat):
+          y = vstar[ttt,:,yyy] # integrand
+          #y = np.insert(y,0,y[0]) # JL: integrate from p=0 towards p
+          y = np.append(y,y[-1]) # JL: integrate from p=0 towards p
+       for zzz in range(0,nz):
+#            the minus sign below comes from the fact that x is ordered by decreasing values of p
+#            whereas the integral should be performed from 0 to p. 
+          psim_TEM[ttt,zzz,yyy] = -scipy.integrate.simps(y[zzz:],x[zzz:])*cosphi2d[0,yyy]
 #        psim[ttt,zzz,yyy] = scipy.integrate.simps(y[0:zzz+1],x[0:zzz+1])*alph[0,yyy]
 # reset to NaN after integration
-    vstar[w] = np.nan ; psim_TEM[w] = np.nan
+     vstar[w] = np.nan ; psim_TEM[w] = np.nan
 
 
  etape("EP flux",time0)
